@@ -6,6 +6,7 @@ from typing import List
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 import logging
+from dotenv import load_dotenv
 
 from pydantic import BaseModel
 
@@ -13,6 +14,8 @@ from app.models.simple_conversation_chat import SimpleConversationChat
 from app.models.summary_conversation_chat import SummaryConversationChat
 
 logging.basicConfig(level=logging.INFO)
+
+load_dotenv()
 
 app = FastAPI(
     title="LangChain API",
