@@ -1,5 +1,6 @@
 import pickle
 import threading
+from typing import List, Tuple
 
 from langchain import LLMChain, OpenAI, ConversationChain
 from langchain.callbacks import CallbackManager
@@ -58,18 +59,28 @@ QA_PROMPT = PromptTemplate(
     template=prompt_template, input_variables=["context", "question"]
 )
 
+def get_chat_history(chat_history: List[Tuple[str, str]]) -> str:
+    buffer = ""
+    for massage in chat_history:
+        if massage.role == 'assistant':
+            buffer += "Assistant: " + massage.content + "\n"
+        elif massage.role == 'user':
+            buffer += "Human: " + massage.content + "\n"
+    return buffer
+
 
 class RetrievalConversationChat:
     def __init__(self, history):
-        self.memory = ConversationSummaryMemory(llm=OpenAI(temperature=0))
-        self.set_memory(history)
+        # self.memory = ConversationSummaryMemory(llm=OpenAI(temperature=0), input_key='question')
+        # self.set_memory(history)
+        self.chat_history = history
 
-    def set_memory(self, history):
-        for message in history:
-            if message.role == 'assistant':
-                self.memory.chat_memory.add_ai_message(message.content)
-            else:
-                self.memory.chat_memory.add_user_message(message.content)
+    # def set_memory(self, history):
+    #     for message in history:
+    #         if message.role == 'assistant':
+    #             self.memory.chat_memory.add_ai_message(message.content)
+    #         else:
+    #             self.memory.chat_memory.add_user_message(message.content)
 
     def generator(self, user_message):
         g = ThreadedGenerator()
@@ -105,7 +116,8 @@ class RetrievalConversationChat:
                 # memory=self.memory,
                 max_tokens_limit=4000-2000,
                 verbose=True,
+                get_chat_history=get_chat_history
             )
-            qa({"question": user_message, 'chat_history': []})
+            qa({"question": user_message, 'chat_history': self.chat_history})
         finally:
             g.close()
