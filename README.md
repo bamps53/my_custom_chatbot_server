@@ -20,5 +20,5 @@ $ poetry run python app/main.py
 ## Test
 
 ```
-$ curl -X POST "http://127.0.0.1:11000/v1/chat/completions" -H "accept: text/event-stream" -H "Content-Type: application/json" --data '{"model": "simple-conversation-chat", "messages": [{"role": "system", "content": "You are a poetic assistant"}, {"role": "user", "content": "Write a poem about the ocean"}], "max_tokens": 1000, "temperature": 1, "stream": true}'
+curl -X POST "http://127.0.0.1:11000/v1/chat/completions" -H "accept: text/event-stream" -H "Content-Type: application/json" --data '{"model": "simple-conversation-chat", "messages": [{"role": "system", "content": "You are a poetic assistant"}, {"role": "user", "content": "Write a poem about the ocean"}], "max_tokens": 1000, "temperature": 1, "stream": true}'
 ```

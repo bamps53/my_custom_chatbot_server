@@ -10,6 +10,10 @@ from dotenv import load_dotenv
 
 from pydantic import BaseModel
 
+import langchain
+from app.models.retrieval_chat import RetrievalConversationChat
+langchain.debug = True
+
 from app.models.simple_conversation_chat import SimpleConversationChat
 from app.models.summary_conversation_chat import SummaryConversationChat
 
@@ -41,9 +45,10 @@ async def streaming_response(json_data, chat_generator):
         "text": '',
         "index": 0,
         "logprobs": None,
-        "finish_reason": 'length',
+        "finish_reason": None,
         "delta": {"content": ''}
     }]
+    print(json_data)
 
     # logging.info(f"Sending initial JSON: {json_without_choices}")
     yield f"data: {json.dumps(json_without_choices)}\n\n"  # NOTE: EventSource
@@ -75,10 +80,14 @@ async def models():
                 "object": "model",
                 "owned_by": "organization-owner"
             },
+            {
+                "id": "retrieval-conversation-chat",
+                "object": "model",
+                "owned_by": "organization-owner"
+            },
         ],
         "object": "list",
     }
-
 
 @app.post("/v1/chat/completions")
 async def chat_completions(completion_request: CompletionRequest):
@@ -91,6 +100,8 @@ async def chat_completions(completion_request: CompletionRequest):
         chat = SimpleConversationChat(history_messages)
     elif completion_request.model == "summary-conversation-chat":
         chat = SummaryConversationChat(history_messages)
+    elif completion_request.model == "retrieval-conversation-chat":
+        chat = RetrievalConversationChat(history_messages)
     else:
         raise ValueError(f"Unknown model: {completion_request.model}")
 
@@ -104,7 +115,7 @@ async def chat_completions(completion_request: CompletionRequest):
                 "text": "",
                 "index": 0,
                 "logprobs": None,
-                "finish_reason": "length"
+                "finish_reason": None
             }
         ]
     }
